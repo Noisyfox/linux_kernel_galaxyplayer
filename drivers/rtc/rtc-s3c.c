@@ -765,10 +765,6 @@ static int s3c_rtc_suspend(struct platform_device *pdev, pm_message_t state)
 	time.tv_nsec = 0;
 	/* save TICNT for anyone using periodic interrupts */
 	ticnt_save = readl(s3c_rtc_base + S3C2410_TICNT);
-
-	if (device_may_wakeup(&pdev->dev))
-		enable_irq_wake(s3c_rtc_alarmno);
-
 	return 0;
 }
 
@@ -779,10 +775,6 @@ static int s3c_rtc_resume(struct platform_device *pdev)
 	time.tv_nsec = 0;
 
 	writel(ticnt_save, s3c_rtc_base + S3C2410_TICNT);
-
-	if (device_may_wakeup(&pdev->dev))
-		disable_irq_wake(s3c_rtc_alarmno);
-
 	return 0;
 }
 #else
