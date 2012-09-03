@@ -88,3 +88,6 @@ _t32
 _tool
 
 Module.symvers
+
+# Patch rejects - ignoring these allows creating reversible diffs of what was changed by Samsung so we can add them back in later
+*.rej
