@@ -17,7 +17,6 @@
 #include <linux/pagemap.h>
 #include <linux/leds.h>
 #include <linux/slab.h>
-#include <linux/suspend.h>
 
 #include <linux/mmc/host.h>
 
@@ -86,9 +85,6 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *dev)
 	init_waitqueue_head(&host->wq);
 	INIT_DELAYED_WORK(&host->detect, mmc_rescan);
 	INIT_DELAYED_WORK_DEFERRABLE(&host->disable, mmc_host_deeper_disable);
-#ifdef CONFIG_PM
-	host->pm_notify.notifier_call = mmc_pm_notify;
-#endif
 
 	/*
 	 * By default, hosts do not support SGIO or large requests.

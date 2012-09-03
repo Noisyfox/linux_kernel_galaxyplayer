@@ -407,6 +407,11 @@ static int s3c_rtc_setalarm(struct device *dev, struct rtc_wkalrm *alrm)
 
 	s3c_rtc_setaie(alrm->enabled);
 
+	if (alrm->enabled)
+		enable_irq_wake(s3c_rtc_alarmno);
+	else
+		disable_irq_wake(s3c_rtc_alarmno);
+
 	return 0;
 }
 
