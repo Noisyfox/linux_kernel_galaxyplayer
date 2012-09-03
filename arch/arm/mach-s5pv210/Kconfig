@@ -54,71 +54,6 @@ config S5PV210_POWER_DOMAIN
 	help
 	  Enable S5PV210 power domain support.
 
-# machine support
-
-config MACH_AQUILA
-	bool "Samsung Aquila"
-	select CPU_S5PV210
-	select ARCH_SPARSEMEM_ENABLE
-	select S5PV210_SETUP_FB_24BPP
-	select S3C_DEV_FB
-	help
-	  Machine support for the Samsung Aquila target based on S5PC110 SoC
-
-config MACH_GONI
-	bool "GONI"
-	select CPU_S5PV210
-	select ARCH_SPARSEMEM_ENABLE
-	help
-	  Machine support for Samsung GONI board
-	  S5PC110(MCP) is one of package option of S5PV210
-
-comment "MMC/SD slot setup"
-depends on PLAT_S5P
-
-menu "Use 8-bit bus width"
-config S5PV210_SD_CH0_8BIT
-bool "Channel 0"
-depends on PLAT_S5P
-default n
-help
-IF channel 0 uses 8-bit bus, channel 1 is disabled.
-
-config S5PV210_SD_CH2_8BIT
-bool "Channel 2"
-depends on PLAT_S5P
-default n
-help
-IF channel 2 uses 8-bit bus, channel 3 is disabled.
-endmenu
-
-config S5PC110_DEV_ONENAND
-	bool
-	default y if CPU_S5PV210
-	help 
-	  Compile in platform device definition for OneNAND1 controller
-
-config MACH_SMDKV210
-	bool "SMDKV210"
-	select CPU_S5PV210
-	select ARCH_SPARSEMEM_ENABLE
-	select SAMSUNG_DEV_ADC
-	select SAMSUNG_DEV_TS
-	select S3C_DEV_WDT
-	select HAVE_S3C2410_WATCHDOG
-	help
-	  Machine support for Samsung SMDKV210
-
-config MACH_SMDKC110
-	bool "SMDKC110"
-	select CPU_S5PV210
-	select ARCH_SPARSEMEM_ENABLE
-	select S3C_DEV_WDT
-	select HAVE_S3C2410_WATCHDOG
-	help
-	  Machine support for Samsung SMDKC110
-	  S5PC110(MCP) is one of package option of S5PV210
-
 config MACH_HERRING
 	bool "Herring"
 	select CPU_S5PV210
@@ -278,5 +213,69 @@ config CPU_DIDLE
 	bool "DEEP Idle"
 	depends on CPU_IDLE
 	default y
+
+comment "MMC/SD slot setup"
+depends on PLAT_S5P
+
+menu "Use 8-bit bus width"
+config S5PV210_SD_CH0_8BIT
+bool "Channel 0"
+depends on PLAT_S5P
+default n
+help
+IF channel 0 uses 8-bit bus, channel 1 is disabled.
+
+config S5PV210_SD_CH2_8BIT
+bool "Channel 2"
+depends on PLAT_S5P
+default n
+help
+IF channel 2 uses 8-bit bus, channel 3 is disabled.
+endmenu
+
+# machine support
+
+config MACH_AQUILA
+	bool "Samsung Aquila"
+	select CPU_S5PV210
+	select ARCH_SPARSEMEM_ENABLE
+	select S5PV210_SETUP_FB_24BPP
+	select S3C_DEV_FB
+	help
+	  Machine support for the Samsung Aquila target based on S5PC110 SoC
+
+config MACH_GONI
+	bool "GONI"
+	select CPU_S5PV210
+	select ARCH_SPARSEMEM_ENABLE
+	help
+	  Machine support for Samsung GONI board
+	  S5PC110(MCP) is one of package option of S5PV210
+
+config S5PC110_DEV_ONENAND
+	bool
+	help
+	  Compile in platform device definition for OneNAND1 controller
+
+config MACH_SMDKV210
+	bool "SMDKV210"
+	select CPU_S5PV210
+	select ARCH_SPARSEMEM_ENABLE
+	select SAMSUNG_DEV_ADC
+	select SAMSUNG_DEV_TS
+	select S3C_DEV_WDT
+	select HAVE_S3C2410_WATCHDOG
+	help
+	  Machine support for Samsung SMDKV210
+
+config MACH_SMDKC110
+	bool "SMDKC110"
+	select CPU_S5PV210
+	select ARCH_SPARSEMEM_ENABLE
+	select S3C_DEV_WDT
+	select HAVE_S3C2410_WATCHDOG
+	help
+	  Machine support for Samsung SMDKC110
+	  S5PC110(MCP) is one of package option of S5PV210
 
 endif
