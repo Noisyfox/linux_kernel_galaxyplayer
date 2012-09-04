@@ -73,7 +73,6 @@ static struct s3c_uart_irq uart_irqs[] = {
 
 void __init s5p_init_irq(u32 *vic, u32 num_vic)
 {
-	struct irq_chip *chip;
 	int irq;
 
 	/* initialize the VICs */
@@ -89,6 +88,7 @@ void __init s5p_init_irq(u32 *vic, u32 num_vic)
 	s3c_init_uart_irqs(uart_irqs, ARRAY_SIZE(uart_irqs));
 
 	/* Register wakeup source. */
+	struct irq_chip *chip;
 	for (irq = 0; irq < ARRAY_SIZE(wakeup_source); irq++) {
 		chip = get_irq_chip(wakeup_source[irq]);
 		chip->set_wake = s3c_irq_wake;

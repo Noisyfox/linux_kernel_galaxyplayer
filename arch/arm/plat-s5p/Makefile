@@ -10,15 +10,8 @@ obj-m				:=
 obj-n				:= dummy.o
 obj-				:=
 
-# Core files
-
-obj-y				+= dev-uart.o
-obj-y				+= cpu.o
-obj-y				+= clock.o
-obj-y				+= irq.o
 obj-y				+= devs.o
 obj-y				+= bootmem.o
-obj-$(CONFIG_S5P_EXT_INT)	+= irq-eint.o irq-eint-group.o
 
 # PM support
 
@@ -37,3 +30,12 @@ endif
 
 obj-$(CONFIG_S5P_DEV_MFC)	+= dev-mfc.o
 obj-$(CONFIG_S5P_SETUP_MFC)	+= setup-mfc.o
+
+# Core files
+
+obj-y				+= dev-uart.o
+obj-y				+= cpu.o
+obj-y				+= clock.o
+obj-y				+= irq.o
+obj-$(CONFIG_S5P_EXT_INT)	+= irq-eint.o
+

@@ -74,7 +74,6 @@ extern struct platform_device s3c_device_hwmon;
 extern struct platform_device s3c_device_hsmmc0;
 extern struct platform_device s3c_device_hsmmc1;
 extern struct platform_device s3c_device_hsmmc2;
-extern struct platform_device s3c_device_hsmmc3;
 
 extern struct platform_device s3c_device_spi0;
 extern struct platform_device s3c_device_spi1;
@@ -179,27 +178,9 @@ extern struct platform_device s5p6442_device_spi;
 extern struct platform_device s5p6440_device_pcm;
 extern struct platform_device s5p6440_device_iis;
 
-extern struct platform_device s5pc100_device_ac97;
-extern struct platform_device s5pc100_device_pcm0;
-extern struct platform_device s5pc100_device_pcm1;
-extern struct platform_device s5pc100_device_iis0;
-extern struct platform_device s5pc100_device_iis1;
-extern struct platform_device s5pc100_device_iis2;
-extern struct platform_device s5p_device_rtc;
-
-extern struct platform_device s3c_device_adc;
-/* s3c2440 specific devices */
-
 extern struct platform_device s5pv210_device_pdma0;
 extern struct platform_device s5pv210_device_pdma1;
 extern struct platform_device s5pv210_device_mdma;
-
-#ifdef CONFIG_CPU_S3C2440
-
-extern struct platform_device s3c_device_camif;
-extern struct platform_device s3c_device_ac97;
-
-#endif
 
 #ifdef CONFIG_SND_S5P_RP
 extern struct platform_device s5p_device_rp;
@@ -207,3 +188,21 @@ extern struct platform_device s5p_device_rp;
 void __init s3c_usb_set_serial(void);
 
 extern struct platform_device s5p_device_ace;
+
+extern struct platform_device s5p_device_rtc;
+extern struct platform_device s3c_device_adc;
+extern struct platform_device s5pc100_device_ac97;
+extern struct platform_device s5pc100_device_pcm0;
+extern struct platform_device s5pc100_device_pcm1;
+extern struct platform_device s5pc100_device_iis0;
+extern struct platform_device s5pc100_device_iis1;
+extern struct platform_device s5pc100_device_iis2;
+
+/* s3c2440 specific devices */
+
+#ifdef CONFIG_CPU_S3C2440
+
+extern struct platform_device s3c_device_camif;
+extern struct platform_device s3c_device_ac97;
+
+#endif
