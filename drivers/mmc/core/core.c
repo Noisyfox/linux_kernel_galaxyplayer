@@ -1165,7 +1165,6 @@ void mmc_rescan(struct work_struct *work)
 	if (!err) {
 		if (mmc_attach_sdio(host, ocr))
 			mmc_power_off(host);
-		extend_wakelock = 1;
 		goto out;
 	}
 
