@@ -240,17 +240,11 @@ struct sdhci_host {
 #define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN		(1<<25)
 /* Controller cannot support End Attribute in NOP ADMA descriptor */
 #define SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC		(1<<26)
-/* Controller does not use HISPD bit field in HI-SPEED SD cards */
-#define SDHCI_QUIRK_NO_HISPD_BIT			(1<<27)
-/* Controller has unreliable card present bit */
-#define SDHCI_QUIRK_BROKEN_CARD_PRESENT_BIT		(1<<28)
 
 	int			irq;		/* Device IRQ */
 	void __iomem *		ioaddr;		/* Mapped address */
 
 	const struct sdhci_ops	*ops;		/* Low level hw interface */
-
-	struct regulator	*vmmc;		/* Power regulator */
 
 	/* Internal data */
 	struct mmc_host		*mmc;		/* MMC structure */

@@ -81,41 +81,6 @@ static void sdhci_s3c_check_sclk(struct sdhci_host *host)
 	}
 }
 
-/**
- * sdhci_s3c_get_max_clk - callback to get maximum clock frequency.
- * @host: The SDHCI host instance.
- *
- * Callback to return the maximum clock rate acheivable by the controller.
-*/
-static unsigned int sdhci_s3c_get_max_clk(struct sdhci_host *host)
-{
-	struct sdhci_s3c *ourhost = to_s3c(host);
-	struct clk *busclk;
-	unsigned int rate, max;
-	int clk;
-
-	/* note, a reset will reset the clock source */
-
-	sdhci_s3c_check_sclk(host);
-
-	for (max = 0, clk = 0; clk < MAX_BUS_CLK; clk++) {
-		busclk = ourhost->clk_bus[clk];
-		if (!busclk)
-			continue;
-
-		rate = clk_get_rate(busclk);
-		if (rate > max)
-			max = rate;
-	}
-
-	return max;
-}
-
-static unsigned int sdhci_s3c_get_timeout_clk(struct sdhci_host *host)
-{
-	return sdhci_s3c_get_max_clk(host) / 1000000;
-}
-
 static void sdhci_s3c_set_ios(struct sdhci_host *host,
 			      struct mmc_ios *ios)
 {
@@ -154,6 +119,109 @@ static void sdhci_s3c_set_ios(struct sdhci_host *host,
 		pdata->rx_cfg = 0;
 		pdata->tx_cfg = 0;
 	}
+}
+
+static int sdhci_s3c_get_ro(struct mmc_host *mmc)
+{
+	struct sdhci_host *host;
+	struct sdhci_s3c *sc;
+
+	host = mmc_priv(mmc);
+	sc = sdhci_priv(host);
+
+	if(sc->pdata->get_ro)
+		return sc->pdata->get_ro(mmc);
+
+	return 0;
+}
+
+static int sdhci_s3c_get_cd(struct sdhci_host *host)
+{
+	unsigned int detect = -ENOSYS;
+	struct sdhci_s3c* sc = sdhci_priv(host);
+
+	if(sc->pdata->detect_ext_cd)
+		detect = sc->pdata->detect_ext_cd();
+
+	return detect;
+}
+
+static void sdhci_s3c_adjust_cfg(struct sdhci_host *host, int rw)
+{
+	struct sdhci_s3c *ourhost = to_s3c(host);
+	struct s3c_sdhci_platdata *pdata = ourhost->pdata;
+
+	if(pdata->adjust_cfg_card)
+		pdata->adjust_cfg_card(pdata, host->ioaddr, rw);
+}
+
+/**
+ * sdhci_s3c_get_max_clk - callback to get maximum clock frequency.
+ * @host: The SDHCI host instance.
+ *
+ * Callback to return the maximum clock rate acheivable by the controller.
+*/
+static unsigned int sdhci_s3c_get_max_clk(struct sdhci_host *host)
+{
+	struct sdhci_s3c *ourhost = to_s3c(host);
+	struct clk *busclk;
+	unsigned int rate, max;
+	int clk;
+
+	/* note, a reset will reset the clock source */
+
+	sdhci_s3c_check_sclk(host);
+
+	for (max = 0, clk = 0; clk < MAX_BUS_CLK; clk++) {
+		busclk = ourhost->clk_bus[clk];
+		if (!busclk)
+			continue;
+
+		rate = clk_get_rate(busclk);
+		if (rate > max)
+			max = rate;
+	}
+
+	return max;
+}
+
+static unsigned int sdhci_s3c_get_timeout_clk(struct sdhci_host *host)
+{
+	return sdhci_s3c_get_max_clk(host) / 1000000;
+}
+
+/*
+ * call this when you need sd stack to recognize insertion or removal of card
+ * that can't be told by SDHCI regs
+ */
+void sdhci_s3c_force_presence_change(struct platform_device *pdev)
+{
+	struct sdhci_host *host = platform_get_drvdata(pdev);
+
+	printk(KERN_DEBUG "%s : Enter\n",__FUNCTION__);
+	mmc_detect_change(host->mmc, msecs_to_jiffies(60));
+}
+EXPORT_SYMBOL_GPL(sdhci_s3c_force_presence_change);
+
+irqreturn_t sdhci_irq_cd(int irq, void *dev_id)
+{
+	struct sdhci_s3c* sc = dev_id;
+	uint detect;
+
+	printk(KERN_DEBUG "sdhci: card interrupt.\n");
+
+	detect = sc->pdata->detect_ext_cd();
+
+	if (detect) {
+		printk(KERN_DEBUG "sdhci: card inserted.\n");
+		sc->host->flags |= SDHCI_DEVICE_ALIVE;
+	} else {
+		printk(KERN_DEBUG "sdhci: card removed.\n");
+		sc->host->flags &= ~SDHCI_DEVICE_ALIVE;
+	}
+	tasklet_schedule(&sc->host->card_tasklet);
+
+	return IRQ_HANDLED;
 }
 
 /**
@@ -238,82 +306,11 @@ static void sdhci_s3c_set_clock(struct sdhci_host *host, unsigned int clock)
 	}
 }
 
-static int sdhci_s3c_get_ro(struct mmc_host *mmc)
-{
-	struct sdhci_host *host;
-	struct sdhci_s3c *sc;
-
-	host = mmc_priv(mmc);
-	sc = sdhci_priv(host);
-
-	if(sc->pdata->get_ro)
-		return sc->pdata->get_ro(mmc);
-
-	return 0;
-}
-
-static int sdhci_s3c_get_cd(struct sdhci_host *host)
-{
-	unsigned int detect = -ENOSYS;
-	struct sdhci_s3c* sc = sdhci_priv(host);
-
-	if(sc->pdata->detect_ext_cd)
-		detect = sc->pdata->detect_ext_cd();
-
-	return detect;
-}
-
-static void sdhci_s3c_adjust_cfg(struct sdhci_host *host, int rw)
-{
-	struct sdhci_s3c *ourhost = to_s3c(host);
-	struct s3c_sdhci_platdata *pdata = ourhost->pdata;
-
-	if(pdata->adjust_cfg_card)
-		pdata->adjust_cfg_card(pdata, host->ioaddr, rw);
-}
-
 static struct sdhci_ops sdhci_s3c_ops = {
 	.get_max_clock		= sdhci_s3c_get_max_clk,
 	.get_timeout_clock	= sdhci_s3c_get_timeout_clk,
 	.set_clock		= sdhci_s3c_set_clock,
-	.set_ios		= sdhci_s3c_set_ios,
-	.get_cd			= sdhci_s3c_get_cd,
-	.adjust_cfg		= sdhci_s3c_adjust_cfg,
 };
-
-/*
- * call this when you need sd stack to recognize insertion or removal of card
- * that can't be told by SDHCI regs
- */
-void sdhci_s3c_force_presence_change(struct platform_device *pdev)
-{
-	struct sdhci_host *host = platform_get_drvdata(pdev);
-
-	printk(KERN_DEBUG "%s : Enter\n",__FUNCTION__);
-	mmc_detect_change(host->mmc, msecs_to_jiffies(60));
-}
-EXPORT_SYMBOL_GPL(sdhci_s3c_force_presence_change);
-
-irqreturn_t sdhci_irq_cd(int irq, void *dev_id)
-{
-	struct sdhci_s3c* sc = dev_id;
-	uint detect;
-
-	printk(KERN_DEBUG "sdhci: card interrupt.\n");
-
-	detect = sc->pdata->detect_ext_cd();
-
-	if (detect) {
-		printk(KERN_DEBUG "sdhci: card inserted.\n");
-		sc->host->flags |= SDHCI_DEVICE_ALIVE;
-	} else {
-		printk(KERN_DEBUG "sdhci: card removed.\n");
-		sc->host->flags &= ~SDHCI_DEVICE_ALIVE;
-	}
-	tasklet_schedule(&sc->host->card_tasklet);
-
-	return IRQ_HANDLED;
-}
 
 static int __devinit sdhci_s3c_probe(struct platform_device *pdev)
 {
@@ -421,8 +418,6 @@ static int __devinit sdhci_s3c_probe(struct platform_device *pdev)
 
 	/* Setup quirks for the controller */
 	host->quirks |= SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC;
-	host->quirks |= SDHCI_QUIRK_BROKEN_CARD_PRESENT_BIT;
-	host->quirks |= SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
 
 #ifndef CONFIG_MMC_SDHCI_S3C_DMA
 
@@ -435,6 +430,9 @@ static int __devinit sdhci_s3c_probe(struct platform_device *pdev)
 
 #endif /* CONFIG_MMC_SDHCI_S3C_DMA */
 
+	host->quirks |= SDHCI_QUIRK_BROKEN_CARD_PRESENT_BIT;
+	host->quirks |= SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
+
 	/* It seems we do not get an DATA transfer complete on non-busy
 	 * transfers, not sure if this is a problem with this specific
 	 * SDHCI block, or a missing configuration that needs to be set. */
@@ -443,42 +441,10 @@ static int __devinit sdhci_s3c_probe(struct platform_device *pdev)
 	host->quirks |= (SDHCI_QUIRK_32BIT_DMA_ADDR |
 			 SDHCI_QUIRK_32BIT_DMA_SIZE);
 
-	host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
-
-	if (pdata->host_caps)
-		host->mmc->caps = pdata->host_caps;
-	else
-		host->mmc->caps = 0;
-
-	/* Set pm_flags for built_in device */
-	host->mmc->pm_caps = MMC_PM_KEEP_POWER | MMC_PM_IGNORE_PM_NOTIFY;
-	if (pdata->built_in)
-		host->mmc->pm_flags = MMC_PM_KEEP_POWER | MMC_PM_IGNORE_PM_NOTIFY;
-
-	/* to add external irq as a card detect signal */
-	if (pdata->cfg_ext_cd) {
-		pdata->cfg_ext_cd();
-
-		if (pdata->detect_ext_cd())
-			host->flags |= SDHCI_DEVICE_ALIVE;
-	}
-
-	/* to configure gpio pin as a card write protection signal */
-	if (pdata->cfg_wp)
-		pdata->cfg_wp();
-
 	ret = sdhci_add_host(host);
 	if (ret) {
 		dev_err(dev, "sdhci_add_host() failed\n");
 		goto err_add_host;
-	}
-
-	/* register external irq here (after all init is done) */
-	if (pdata->cfg_ext_cd) {
-		ret = request_irq(pdata->ext_cd, sdhci_irq_cd,
-				IRQF_SHARED, mmc_hostname(host->mmc), sc);
-		if(ret)
-			goto err_add_host;
 	}
 
 	return 0;
@@ -509,23 +475,13 @@ static int __devexit sdhci_s3c_remove(struct platform_device *pdev)
 {
 	struct sdhci_host *host =  platform_get_drvdata(pdev);
 	struct sdhci_s3c *sc = sdhci_priv(host);
-	int ptr, dead = 0;
-	u32 scratch;
+	int ptr;
 
-	scratch = readl(host->ioaddr + SDHCI_INT_STATUS);
-	if (scratch == (u32)-1)
-		dead = 1;
+	sdhci_remove_host(host, 1);
 
-	if(sc->pdata && sc->pdata->cfg_ext_cd)
-		free_irq(sc->pdata->ext_cd, sc);
-
-	sdhci_remove_host(host, dead);
-
-	for (ptr = 0; ptr < MAX_BUS_CLK; ptr++) {
-		if (sc->clk_bus[ptr]) {
-			clk_disable(sc->clk_bus[ptr]);
-			clk_put(sc->clk_bus[ptr]);
-		}
+	for (ptr = 0; ptr < 3; ptr++) {
+		clk_disable(sc->clk_bus[ptr]);
+		clk_put(sc->clk_bus[ptr]);
 	}
 	clk_disable(sc->clk_io);
 	clk_put(sc->clk_io);
