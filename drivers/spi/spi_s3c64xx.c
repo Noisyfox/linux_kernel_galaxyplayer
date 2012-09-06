@@ -391,19 +391,10 @@ static int wait_for_xfer(struct s3c64xx_spi_driver_data *sdd,
 		val = msecs_to_jiffies(ms) + 10;
 		val = wait_for_completion_timeout(&sdd->xfer_completion, val);
 	} else {
-		// VenturiGB_Usys_jypark 2011.08.08 - DMB (Ref.GalaxyS_Kor GB) [[
-		u32	status;
-
 		val = msecs_to_loops(ms);
 		do {
-			status = readl(regs + S3C64XX_SPI_STATUS);
-
-		} while (RX_FIFO_LVL(status, sci) < xfer->len && --val);
-		//val = msecs_to_loops(ms);
-		//do {
-		//	val = readl(regs + S3C64XX_SPI_STATUS);
-		//} while (RX_FIFO_LVL(val, sci) < xfer->len && --val);
-		// VenturiGB_Usys_jypark 2011.08.08 - DMB (Ref.GalaxyS_Kor GB) ]]
+			val = readl(regs + S3C64XX_SPI_STATUS);
+		} while (RX_FIFO_LVL(val, sci) < xfer->len && --val);
 	}
 
 	if (!val)
