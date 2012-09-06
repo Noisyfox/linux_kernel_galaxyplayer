@@ -245,11 +245,9 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
 	if (value)
 		goto done;
 
-	if (gpio_is_valid(SPI_MISO_GPIO)) {
-		value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
-		if (value)
-			goto free_mosi;
-	}
+	value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
+	if (value)
+		goto free_mosi;
 
 	value = spi_gpio_alloc(SPI_SCK_GPIO, label, false);
 	if (value)
@@ -312,8 +310,7 @@ static int __init spi_gpio_probe(struct platform_device *pdev)
 	if (status < 0) {
 		spi_master_put(spi_gpio->bitbang.master);
 gpio_free:
-		if (gpio_is_valid(SPI_MISO_GPIO))
-			gpio_free(SPI_MISO_GPIO);
+		gpio_free(SPI_MISO_GPIO);
 		gpio_free(SPI_MOSI_GPIO);
 		gpio_free(SPI_SCK_GPIO);
 		spi_master_put(master);
@@ -337,8 +334,7 @@ static int __exit spi_gpio_remove(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, NULL);
 
-	if (gpio_is_valid(SPI_MISO_GPIO))
-		gpio_free(SPI_MISO_GPIO);
+	gpio_free(SPI_MISO_GPIO);
 	gpio_free(SPI_MOSI_GPIO);
 	gpio_free(SPI_SCK_GPIO);
 
