@@ -163,14 +163,8 @@ check_partition(struct gendisk *hd, struct block_device *bdev)
 	int i, res, err;
 
 	state = kzalloc(sizeof(struct parsed_partitions), GFP_KERNEL);
-	if (!state) {
-		state = (struct parsed_partitions *)vmalloc(sizeof(struct parsed_partitions));
-		if (!state)
-			return NULL;
-		memset(state, 0, sizeof(struct parsed_partitions));
-		state->is_kzalloc = false;
-	} else
-		state->is_kzalloc = true;
+	if (!state)
+		return NULL;
 
 	state->bdev = bdev;
 	disk_name(hd, 0, state->name);
@@ -203,12 +197,7 @@ check_partition(struct gendisk *hd, struct block_device *bdev)
 		printk(" unknown partition table\n");
 	else if (warn_no_part)
 		printk(" unable to read partition table\n");
-
-	if (state->is_kzalloc)
-		kfree(state);
-	else
-		vfree(state);
-
+	kfree(state);
 	return ERR_PTR(res);
 }
 
