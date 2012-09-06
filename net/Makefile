@@ -58,6 +58,7 @@ obj-$(CONFIG_IUCV)		+= iucv/
 obj-$(CONFIG_RFKILL)		+= rfkill/
 obj-$(CONFIG_NET_9P)		+= 9p/
 obj-$(CONFIG_CAIF)		+= caif/
+obj-$(CONFIG_NET_ACTIVITY_STATS)		+= activity_stats.o
 ifneq ($(CONFIG_DCB),)
 obj-y				+= dcb/
 endif
@@ -67,4 +68,3 @@ ifeq ($(CONFIG_NET),y)
 obj-$(CONFIG_SYSCTL)		+= sysctl_net.o
 endif
 obj-$(CONFIG_WIMAX)		+= wimax/
-obj-$(CONFIG_NET_ACTIVITY_STATS)		+= activity_stats.o

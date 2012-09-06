@@ -2186,6 +2186,13 @@ config FB_BROADSHEET
 	  and could also have been called by other names when coupled with
 	  a bridge adapter.
 
+config FB_S3C
+	tristate "Samsung S3C framebuffer support"
+	depends on FB && ARCH_S3C64XX
+	select FB_CFB_FILLRECT
+	select FB_CFB_COPYAREA
+	select FB_CFB_IMAGEBLIT
+
 source "drivers/video/omap/Kconfig"
 source "drivers/video/omap2/Kconfig"
 
