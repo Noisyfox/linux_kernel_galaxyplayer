@@ -190,40 +190,6 @@ static unsigned int sdhci_s3c_get_timeout_clk(struct sdhci_host *host)
 	return sdhci_s3c_get_max_clk(host) / 1000000;
 }
 
-/*
- * call this when you need sd stack to recognize insertion or removal of card
- * that can't be told by SDHCI regs
- */
-void sdhci_s3c_force_presence_change(struct platform_device *pdev)
-{
-	struct sdhci_host *host = platform_get_drvdata(pdev);
-
-	printk(KERN_DEBUG "%s : Enter\n",__FUNCTION__);
-	mmc_detect_change(host->mmc, msecs_to_jiffies(60));
-}
-EXPORT_SYMBOL_GPL(sdhci_s3c_force_presence_change);
-
-irqreturn_t sdhci_irq_cd(int irq, void *dev_id)
-{
-	struct sdhci_s3c* sc = dev_id;
-	uint detect;
-
-	printk(KERN_DEBUG "sdhci: card interrupt.\n");
-
-	detect = sc->pdata->detect_ext_cd();
-
-	if (detect) {
-		printk(KERN_DEBUG "sdhci: card inserted.\n");
-		sc->host->flags |= SDHCI_DEVICE_ALIVE;
-	} else {
-		printk(KERN_DEBUG "sdhci: card removed.\n");
-		sc->host->flags &= ~SDHCI_DEVICE_ALIVE;
-	}
-	tasklet_schedule(&sc->host->card_tasklet);
-
-	return IRQ_HANDLED;
-}
-
 /**
  * sdhci_s3c_consider_clock - consider one the bus clocks for current setting
  * @ourhost: Our SDHCI instance.
@@ -304,6 +270,40 @@ static void sdhci_s3c_set_clock(struct sdhci_host *host, unsigned int clock)
 		ctrl |= best_src << S3C_SDHCI_CTRL2_SELBASECLK_SHIFT;
 		writel(ctrl, host->ioaddr + S3C_SDHCI_CONTROL2);
 	}
+}
+
+/*
+ * call this when you need sd stack to recognize insertion or removal of card
+ * that can't be told by SDHCI regs
+ */
+void sdhci_s3c_force_presence_change(struct platform_device *pdev)
+{
+	struct sdhci_host *host = platform_get_drvdata(pdev);
+
+	printk(KERN_DEBUG "%s : Enter\n",__FUNCTION__);
+	mmc_detect_change(host->mmc, msecs_to_jiffies(60));
+}
+EXPORT_SYMBOL_GPL(sdhci_s3c_force_presence_change);
+
+irqreturn_t sdhci_irq_cd(int irq, void *dev_id)
+{
+	struct sdhci_s3c* sc = dev_id;
+	uint detect;
+
+	printk(KERN_DEBUG "sdhci: card interrupt.\n");
+
+	detect = sc->pdata->detect_ext_cd();
+
+	if (detect) {
+		printk(KERN_DEBUG "sdhci: card inserted.\n");
+		sc->host->flags |= SDHCI_DEVICE_ALIVE;
+	} else {
+		printk(KERN_DEBUG "sdhci: card removed.\n");
+		sc->host->flags &= ~SDHCI_DEVICE_ALIVE;
+	}
+	tasklet_schedule(&sc->host->card_tasklet);
+
+	return IRQ_HANDLED;
 }
 
 static struct sdhci_ops sdhci_s3c_ops = {
