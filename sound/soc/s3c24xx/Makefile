@@ -44,6 +44,9 @@ snd-soc-s5pc1xx-wm8994-objs := s5pc1xx-wm8994.o
 snd-soc-s5pc1xx-pcm-wm8994-objs := s5pc1xx-pcm-wm8994.o
 snd-soc-s5pc1xx-mc1n2-objs := s5pc1xx-mc1n2.o
 
+obj-$(CONFIG_SND_S5P_WM8994)  += snd-soc-s5pc1xx-wm8994.o
+obj-$(CONFIG_SND_C110_PCM)	+= snd-soc-s5pc1xx-pcm-wm8994.o
+obj-$(CONFIG_SND_SMDKC110_MC1N2)  += snd-soc-s5pc1xx-mc1n2.o
 obj-$(CONFIG_SND_S3C24XX_SOC_JIVE_WM8750) += snd-soc-jive-wm8750.o
 obj-$(CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753) += snd-soc-neo1973-wm8753.o
 obj-$(CONFIG_SND_S3C24XX_SOC_NEO1973_GTA02_WM8753) += snd-soc-neo1973-gta02-wm8753.o
@@ -54,7 +57,4 @@ obj-$(CONFIG_SND_S3C24XX_SOC_SIMTEC) += snd-soc-s3c24xx-simtec.o
 obj-$(CONFIG_SND_S3C24XX_SOC_SIMTEC_HERMES) += snd-soc-s3c24xx-simtec-hermes.o
 obj-$(CONFIG_SND_S3C24XX_SOC_SIMTEC_TLV320AIC23) += snd-soc-s3c24xx-simtec-tlv320aic23.o
 obj-$(CONFIG_SND_S3C64XX_SOC_WM8580) += snd-soc-smdk64xx-wm8580.o
-obj-$(CONFIG_SND_S5P_WM8994)  += snd-soc-s5pc1xx-wm8994.o
-obj-$(CONFIG_SND_SMDKC110_MC1N2)  += snd-soc-s5pc1xx-mc1n2.o
 obj-$(CONFIG_SND_SOC_SMDK_WM9713) += snd-soc-smdk-wm9713.o
-obj-$(CONFIG_SND_C110_PCM)	+= snd-soc-s5pc1xx-pcm-wm8994.o

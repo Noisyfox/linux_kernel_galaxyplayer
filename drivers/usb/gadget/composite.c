@@ -1421,33 +1421,8 @@ static void composite_disconnect(struct usb_gadget *gadget)
 	 * disconnect callbacks?
 	 */
 	spin_lock_irqsave(&cdev->lock, flags);
-	if (cdev->config) {
-		CSY_DBG_ESS("composite_disconnect -> reset_config\n");
+	if (cdev->config)
 		reset_config(cdev);
-	}
-	cdev->connected = 0; 	
-    
-	if (cdev->mute_switch) {
-#ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
-/* Problem  : Re-enumeration when select tethering mode
- * Cause    : Some disconnect intend happen
- * Solution : When disconnect intend happened so many times, block it before connect a usb
- * This patch refered from S1_GINGER (CL:4043)
- * Replace below sequence (mute_switch value set 0),
- * Sometimes, disconnect is called more then one time.
- */
-#else
-		cdev->mute_switch = 0;
-#endif
-		CSY_DBG_ESS("composite_disconnect -> mute_switch\n");
-	}
-	else {
-		schedule_work(&cdev->switch_work);
-		CSY_DBG_ESS("composite_disconnect -> switch_work\n");
-#ifdef CONFIG_USB_ANDROID_ACCESSORY
-                cdev->accessory_mode=0;
-#endif
-	}
 	spin_unlock_irqrestore(&cdev->lock, flags);
 }
 
